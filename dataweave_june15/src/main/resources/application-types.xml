@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="CsvExample" format="csv">
+      <types:shape format="weave" example="examples/schema.csv"><![CDATA[%dw 2.0
+
+type CsvExample = Array<{|  name: String,   lastname: String,   age: String,   gender: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="JsonExample" format="json">
+      <types:shape format="weave" example="examples/app.json"><![CDATA[%dw 2.0
+
+type JsonExample = {|
+  name: String, 
+  lastname: String, 
+  age: String, 
+  gender: String
+|} {"example": "{\\\"name\\\":\\\"mounika\\\",\\\"lastname\\\":\\\"gudiputi\\\",\\\"age\\\":\\\"20\\\",\\\"gender\\\":\\\"female\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#089ccf50-50ea-4fb4-b0fb-86e06277d709">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="CsvExample"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="CsvExample"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

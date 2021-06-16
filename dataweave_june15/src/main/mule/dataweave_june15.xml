@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d73acb0c-aa6c-4300-8c7b-14494cbc84c8" >
+		<http:listener-connection host="0.0.0.0" port="8045" />
+	</http:listener-config>
+	<flow name="dataweave_june15Flow" doc:id="1490d4f6-4d02-4749-9015-e9530e116798" >
+		<http:listener doc:name="Listener" doc:id="9618677a-8d50-439d-9dcb-ef4231a8c9b8" config-ref="HTTP_Listener_config" path="dw"/>
+		<ee:transform doc:name="type coercions" doc:id="f332fb76-edfc-48ff-813d-685aac0f8df2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var employee={
+	empName : "Mounika",
+	empLocation : "india",
+	empExperience : "12",
+	isActive : "true",
+	empName2 : null,
+	empno : null
+}
+---
+{
+	empName : employee.empName as String,
+	empLocation : employee.empLocation as String,
+	empExperience : employee.empExperience as Number,
+	isActive : employee.isActive as Boolean default false,
+	empName2 :  employee.empName2 as String default "",
+	empno : employee.empno as Number default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dataweave_june15Flow1" doc:id="1e0b0524-514f-401a-ad42-defb87e875f9" >
+		<ee:transform doc:name="Transform Message" doc:id="dc44f01c-6c72-4925-9d4a-9839e4039ddf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"todayDate" : now(),
+	"DateFormat1" : now() as Date {format: "yyyy-MM-dd"},
+	"DateFormat2" : now() as Date {format: "yyyy-MMM-dd"},
+	"todayTime" : now() as Time {format: "HH:mm:ss"}, //HH for 24 hours, hh for 12 hours
+	"todayTimeFormat2" : now() as Time {format: "HH:mm:ss:SSS"},//SSS refers to milliseconds
+	"currentHour" : now() as Time {format: "HH"},
+	"currentMinuite" : now() as Time {format: "mm"},
+	"currentSecond" : now() as Time {format: "ss"},
+	"currentMillisecond" : now() as Time {format: "SSS"},
+	"currentDateTime" : now() as LocalDateTime {format: "yyyy-MM-dd  HH:mm:ss:SSS"},
+	"UTCTime" : now() >> "UTC", //for timezones, use >>
+	"ISTTime" : now() >> "IST",
+	"ESTTime" : now() >> "EST",
+	"UTCTime-IST" : (now() >> "UTC") >> "IST", //it converts UTC to IST
+	"UTCTime-IST" : ((now() >> "UTC") >> "IST") as DateTime {format: "yyyy-MM-dd  HH:mm:ss:SSS"},
+	"USLos_AngelsTime" : now() >> "America/Los_Angeles" 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
