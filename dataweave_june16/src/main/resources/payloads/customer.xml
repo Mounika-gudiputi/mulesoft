@@ -1,0 +1,12 @@
+<customer xmlns:india="https://india.com" xmlns:us="https://us.com">
+	<us:Address types="residential">
+		<street>first street</street>
+		<lane>first lane</lane>
+		<city>usStreet</city>
+	</us:Address>
+	<india:Address>
+		<village>konduru</village>
+		<district>krishna</district>
+		<state>AP</state>
+	</india:Address>
+</customer>

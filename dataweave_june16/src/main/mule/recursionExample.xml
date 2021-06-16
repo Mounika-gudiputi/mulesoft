@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="recursionExampleFlow" doc:id="df6f74ab-b94a-445e-b27c-95753b0286e3" >
+		<http:listener doc:name="Listener" doc:id="be94af14-8dd7-45b2-86c4-31a8de57a1c9" config-ref="HTTP_Listener_config" path="recursion"/>
+		<ee:transform doc:name="Transform Message" doc:id="b718363a-e54b-499c-9f13-42e3df25c7b2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var ds =  {
+    "message": "Test   ",
+    "read": [
+        {
+            "test": "   t   "
+        }
+    ]
+}
+var deepData = (0 to 84) as Array reduce (e, acc=ds) -> {value: " TO_TRIM ",next: acc}
+
+fun trimWS(item) = item match {
+    case is Array -> $ map trimWS($)
+    case is Object -> $ mapObject {($$): trimWS($)}
+    case is String -> trim($)
+    else -> $
+}
+
+---
+
+trimWS(deepData)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

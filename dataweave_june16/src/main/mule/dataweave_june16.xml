@@ -1,5 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4d369feb-b687-4e9e-ba79-caf019e789a6" >
+		<http:listener-connection host="0.0.0.0" port="8046" />
+	</http:listener-config>
+	<flow name="single-and-multivalue-selectors" doc:id="dfb9412c-7da8-41d6-a541-e93e6867685d" >
+		<http:listener doc:name="Listener" doc:id="7f27f6ee-1609-4db3-ba97-a5437b601cd7" config-ref="HTTP_Listener_config" path="selector"/>
+		<ee:transform doc:name="Transform Message" doc:id="001052bf-8fa9-4430-b9b8-04eaf1af5507" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+var a={"name":"Sudhir","name":"Suresh"}
+var employeeXml=readUrl('classpath://payloads/employees.xml','application/xml')
+var arrays=[{"name":"Sudhir"},{"name":"Suresh"}]
+---
+"all" :{
+	"entire array" : arrays,
+	"object a" : a.name, //It will print only the first name
+	"all names array" : arrays.name, //for array it gives two names
+	"emp-one":employeeXml.employees.employee, //It will print first employee element
+	"all-emps":employeeXml.employees.*employee,//It will print all elements named "employee"
+	//the above * is multivalue selector
+	
+}
+
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="namespaces_and_attributes" doc:id="03a36992-70ff-4cf9-9462-7587f8776ece" >
+		<ee:transform doc:name="Transform Message" doc:id="02a10bf9-11ce-4450-8d36-845b4e0f3d88" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+var customers=readUrl('classpath://payloads/customer.xml','application/xml')
+---
+"cus" :{
+	"allcustomers" :customers,
+	"gettingNameSpace": customers.customer.Address.#,
+	"gettingNameSpacePrefix": customers.customer.Address.#.prefix,
+	"gettingAttributes" :customers.customer.Address.@,
+	"gettingAttributesvalue" :customers.customer.Address.@.types,
+	"getFirstNs":customers.customer.*Address[0].#,
+	"getSecondNs":customers.customer.*Address[1].#,
+	"getAddressAttr":customers.customer.*Address[0].@.types,//address types attr in 1st address ele
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="create_xml_with_ns_attributes" doc:id="a30968fd-56fb-46a6-80be-9d04a18076bf" >
+		<ee:transform doc:name="Transform Message" doc:id="fef35751-39de-49e9-aa14-ee5684e8bed4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns soap http://www.w3.org/2003/05/soap-envelope
+ns xsi http://www.w3.org/2001/XMLSchema-instance
+---
+{
+	soap#Envelope /* @(xsi#name:"") */:{
+		/*if we remove multi line comment above, 
+		 * that expression is used to remove xsi urls in address tags*/
+		soap#body:{
+			employees:{
+				employee:{
+					id: 1,
+					name : "Varun",
+					address @(xsi#'type': 'residential') :{
+						houseno : 1,
+						street : "First Street",
+						city : "Suryapet"
+					}
+				},
+				employee:{
+					id: 2,
+					name : "Raj",
+					address @(xsi#'type': 'residential') :{
+						houseno : 2,
+						street : "second Street",
+						city : "Sidhipet"
+					}
+				}
+			}
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dynamic_selector_examples" doc:id="1fa7d624-c446-45a9-bcb6-0c74d03892f3" >
+		<ee:transform doc:name="dynamic selector" doc:id="12aa900d-d7b1-4d49-b679-8b72338d5823" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var coupons= {
+	"VISHWASPAWAR001":"FLAT50OFF",
+	"SUDHIRKUMAR002":"FLAT20OFF",
+	"id":"001"
+}
+fun couponIdentifier(object)= (object.fname ++ object.lname ++ object.id)
+var login = {fname:"VISHWAS", lname:"PAWAR", id:"001"}
+---
+{
+	key1 : couponIdentifier(login),
+	key2 : coupons[couponIdentifier(login)] 
+	//for dynamic retrieve we can use functions or variables or anything inside square brackets
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="get_ns_ele_dynamically" doc:id="456a8455-5476-46d6-a2d6-15b463545193" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var c=read('<countries xmlns:india="https://india.com" xmlns:us="https://us.com">
+	
+	<india:capital>New Delhi</india:capital>
+	<india:currency>INR</india:currency>
+	<us:capital>Washington DC</us:capital>
+	<us:currency>USD</us:currency>
+</countries>','application/xml')
+ns us https://us.com
+ns india https://india.com
+var data="currency"
+---
+{
+	key1 : c,
+	key2 : c.countries.india#"currency", //this is direct
+	key3 : c.countries.india#"$(data)" //this is dynamic
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="dynamic_selector_for_attributes" doc:id="6df4c90d-3e3a-409a-b4ab-d81796d4d029" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var c= {
+	"VISHWASPAWAR001":"FLAT50OFF",
+	"SUDHIRKUMAR002":"FLAT20OFF",
+	"SUDHIRKUMAR002":"FLAT60OFF"
+}
+var cpns= read('<coupons>
+					<coupon>
+						<id type="registered" status="active">FLAT50</id>
+					</coupon>
+					<coupon>
+						<id type="unregistered" status="inactive">FLAT50</id>
+					</coupon>
+				</coupons>','application/xml')
+var m="coupon"
+var jsonCoupon="SUDHIRKUMAR002"
+var l="status"
+var t="type"
+---
+{
+	key1 :cpns.coupons.*coupon, //this is direct
+	key2 :cpns.coupons[*(m)], //this is dynamic
+	xml :cpns.coupons[*(m)].id,
+	json :c[*(jsonCoupon)],
+	attributes_status :cpns.coupons.*coupon.id[@'$l'],
+	attributes_type :cpns.coupons.*coupon.id[@'$t']
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Descendants" doc:id="6b708514-0dcf-46ab-982c-b8d4201907cf" >
+		<ee:transform doc:name="Transform Message" doc:id="deee126c-f4e8-4c8c-b459-222c29893e6f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var nested={
+	"message1" :{
+		"message2" :{
+			"message3":"Hello world"
+		}
+	}
+}
+
+---
+nested..]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

@@ -1,0 +1,20 @@
+<employees>
+	<employee>
+		<id>1</id>
+		<name>Varun</name>
+		<address>
+			<houseno>1</houseno>
+			<street>FirstStreet</street>
+			<city>Suryapet</city>
+		</address>
+	</employee>
+	<employee>
+		<id>2</id>
+		<name>Raj</name>
+		<address>
+			<houseno>2</houseno>
+			<street>SecondStreet</street>
+			<city>IBM</city>
+		</address>
+	</employee>
+</employees>
