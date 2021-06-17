@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="map_examplesFlow" doc:id="1cd0f8e8-6002-4def-ad86-e3f521b74880" >
+		<ee:transform doc:name="Transform Message" doc:id="6b079b9a-ab60-439e-b7b2-46234c3b7bee" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var myVar={
+    "books": [
+      {
+        "-category": "cooking",
+        "title":"Everyday Italian",
+        "author": "Giada De Laurentiis"
+      },
+      {
+        "-category": "children",
+        "title": "Harry Potter",
+        "author": "J K. Rowling"
+      },
+      {
+        "-category": "web",
+        "title":  "XQuery Kick Start",
+        "author": [
+          "James McGovern",
+          "Per Bothner",
+          "Kurt Cagle"
+        ],
+        "year": "2003",
+        "price": "49.99"
+      },
+      {
+        "-category": "web",
+        "-cover": "paperback",
+        "title": "Learning XML",
+        "author": "Erik T. Ray",
+      }
+    ]
+}
+---
+items: myVar.books map (item, index) -> {
+      ( item mapObject (value, key) -> {
+      (upper(key)): value
+      })
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="map_examplesFlow1" doc:id="7fd6821e-589c-4698-b5d7-8f97d119f266" >
+		<ee:transform doc:name="Transform Message" doc:id="80bc1443-611c-4a3a-af8c-ba84b4dc8f01" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var myData = [{name:1},{name:2},{name:3}]
+fun myExternalFunction(data): Array =
+    if(data.name == 1)
+        []
+    else if(data.name == 2)
+        [{name: 3}, {name:5}]
+    else
+        [data]
+---
+{
+	beforeFlatten : myData map ((item, index) -> myExternalFunction(item)), 
+	//key1 : flatten(myData map ((item, index) -> myExternalFunction(item))),
+	afterFlatten : myData flatMap ((item, index) -> myExternalFunction(item)) //same as above
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="map_examplesFlow2" doc:id="80d2eaa1-d5ad-48a5-8b18-aaf8b7978cd5" >
+		<ee:transform doc:name="Transform Message" doc:id="0a41b459-9063-4ec6-a675-37035ee3c9c8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var myInputExample = {
+  "inventory": {
+      "book" : {
+        "category": "cooking",
+        "title": "Everyday Italian",
+        "author": "Giada De Laurentiis"
+      },
+      "book" :{
+        "category": "children",
+        "title": "Harry Potter",
+        "author": "J K. Rowling"
+      },
+      "book" :{
+        "category": "web",
+        "title": "Learning XML",
+        "author": "Erik T. Ray"
+      },
+      "magazine" :{
+        "category": "web",
+        "title": "Wired Magazine",
+        "edition": "03-2017"
+      },
+        "magazine" :{
+        "category": "business",
+        "title": "Time Magazine",
+        "edition": "04-2017"
+      }
+   }
+}
+output application/json
+---
+myInputExample.inventory.*book map (item, index) -> {
+      "theType": "book",
+      "theID": index,
+      "theCategory": item.category,
+      "theTitle": item.title,
+      "theAuthor": item.author
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

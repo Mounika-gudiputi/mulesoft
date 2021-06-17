@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0e52ba15-f413-4179-aaa5-7523ab815acb" >
+		<http:listener-connection host="0.0.0.0" port="8047" />
+	</http:listener-config>
+	<flow name="pattern_matching_dw_june17Flow" doc:id="a7645383-3f47-42d0-8661-10a937bd9e27" >
+		<http:listener doc:name="Listener" doc:id="fc2ad97e-1003-4875-bbec-6cdc1f3dde95" config-ref="HTTP_Listener_config" path="match"/>
+		<ee:transform doc:name="Transform Message" doc:id="b001734a-4115-48e3-b2c3-690328d5f5b2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var inputA=123
+var inputB={"name" : "mulesoft"}
+fun processByDifferentTypes(myInput) =
+myInput match{
+	case is "abc" -> "this is matching with my input abc"
+	case is String -> "input type is string"
+	case is Number -> "input type is number"
+	else -> "Input type is " ++ typeOf(myInput)
+}
+---
+{
+	checkString : processByDifferentTypes("test"),
+	checkNumber : processByDifferentTypes(123),
+	checkValue : processByDifferentTypes("abc"),
+	checkArray : processByDifferentTypes([1,2]),
+	checkObject: processByDifferentTypes({"one" : 1, "two" : 2}),
+	//we can use match in here also
+	//if all the cases are not matched, it will print last case or else case
+	"myInputValue" : inputA match{
+		case is "abc" -> "this is matching with my input abc"
+		case is String -> "input type is string"
+		case is Number -> "input type is number"
+		else -> "Input type is " ++ typeOf("123")
+	},
+	"inputB" : inputB match{
+		case is "abc" -> "this is matching with my input abc"
+		case is String -> "input type is string"
+		case is Number -> "input type is number"
+		else -> "Input type is " ++ typeOf(inputB)
+	},
+	"nameOfInputB" : inputB.name match{
+		case is "abc" -> "this is matching with my input abc"
+		case is String -> "input type is string"
+		case is Number -> "input type is number"
+		else -> "Input type is " ++ typeOf(inputB)
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="patternMatch_examples" doc:id="1d31a7c5-bb38-4f88-a58a-b7f99f950124" >
+		<ee:transform doc:name="Transform Message" doc:id="51c8a7f1-792c-4bc8-a0c4-276e2047c178" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"hello world" match {
+	case word matches /(hello)\s\w+/ ->  word[1] as String ++ " was matched"
+	case literalMatch: "hello world" -> upper(literalMatch)
+	case hasOne if( hasOne is Object and hasOne.three? ) -> hasOne.three
+	else -> $
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="5bfa480d-dd25-45e7-8e5a-510bbabcbd2e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"hello world" match {
+	case word matches  /(hello)\s\w+/ ->  word[1] ++ " was matched"
+	case literalMatch: "hello world" -> upper(literalMatch)
+	case last if(true) -> last
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="pattern_matching_on_literal_values" doc:id="8b68ac1d-a79a-481d-8eaa-2f972dcc5d74" >
+		<ee:transform doc:name="Transform Message" doc:id="8f966119-5b69-4171-abb0-207ddd15194e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var myInput = {
+  "string": "Emiliano"
+}
+output application/json
+---
+{
+  a: myInput.string match {
+    case "Emiliano" -> true
+    case "Mariano" -> false
+  },
+  b: myInput.string match {
+    case str: "Emiliano" -> { "matches": true, value: str }
+    case str: "Mariano" -> { "matches": false, value: str }
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="pattern_matching_on_expressions" doc:id="694002f7-e243-429b-9b03-a67deaf13af8" >
+		<ee:transform doc:name="Transform Message" doc:id="fd3af2fb-161c-4942-8828-cf546c7bc953" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var myInput = {
+  "string": "Emiliano",
+  "number": 3.14
+}
+output application/json
+---
+{
+  a: myInput.string match {
+    case str if str == "Mariano" -> str ++ " de Achaval"
+    case str if str == "Emiliano" -> str ++ " Lesende"
+  },
+  b: myInput.number match {
+    case num if num == 3 -> "equal"
+    case num if num > 3 -> "greater than"
+    case num if num < 3 -> "less than"
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
