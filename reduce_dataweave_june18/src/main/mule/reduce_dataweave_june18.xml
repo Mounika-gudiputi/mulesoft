@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="reduce_dataweave_june18Flow" doc:id="3007f639-0915-4562-848c-db145c0c7f5e" >
+		<ee:transform doc:name="Transform Message" doc:id="701e056e-1c12-43c5-8ac8-cfe70117a2e9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+fun sum(item: Number,acc: Number)= item+acc
+fun sub(item: Number,acc: Number)= item-acc
+---
+ {
+ 	sum1 : reduce([1,5,7],(item,acc)->sum(item,acc)),
+ 	sum2 : [1,5,7] reduce((item,acc)->sum(item,acc)),
+ 	sum3 : [1,5,7] reduce(item,acc)->sum(item,acc), //same as above
+ 	sum4 : [1,5,7] reduce(item,acc=10)->sum(item,acc),
+ 	
+ 	/* here item is first ele in the array i.e, 1
+	 * acc is like storing previous output initially set to 0
+	 * note that as sum function uses +(addition) acc is set to 0. for multiply acc set to 1 initially
+	 * sum(1,0) => 1+0 = 1 --- acc=1
+	 * sum(5,1) => 5+1 = 6 --- acc=6
+	 * sum(7,6) => 7+6 = 13 --- acc=13
+	 */
+	 
+	sumWithoutFunction : [1,5,7] reduce $ + $$,
+	subWithoutFunction : [1,5,7] reduce $ - $$,
+	
+	/*
+	 * here $ is item and $$ would be accumulator
+	 */
+ 	subtract : [1,5,7] reduce(item,acc)->sub(item,acc)
+ 	/* sub(1,0)= 1-0 =1 ---- acc=1
+ 	 * sub(5,1)= 5-1 =4 ---- acc=4
+ 	 * sub(7,4)= 7-4 =3 ---- acc=3
+ 	 */
+ 	 
+ }]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="9d33ce5e-7a30-445e-9e55-98af3412821a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var mappings= [
+	{
+		"SourceFieldName" : "CUSTOMER_NAME",
+		"DestinationFieldNmae" : "Name"
+	},
+	{
+		"SourceFieldName" : "CUSTOMER_ADDRESS",
+		"DestinationFieldNmae" : "Address"
+	}
+]
+---
+//if we want to get above json values in key value pairs
+{
+	wrong_input1 : mappings reduce(item,acc) -> {(item.SourceFieldName) : item.DestinationFieldNmae},
+	//here acc is not included
+	wrong_input2 : mappings reduce(item,acc) -> acc ++ {(item.SourceFieldName) : item.DestinationFieldNmae},
+	//here acc is included,but acc refers to the first object in the mappings array
+	correct_input : mappings reduce(item,acc={}) -> acc ++{(item.SourceFieldName) : item.DestinationFieldNmae}
+	//here acc is set to null object-{},so it gives the correct output
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="f6d5d1a1-3921-4e6b-b337-476f12a2c1e8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var orders= {
+	"Orders" : [
+		{
+			"Number" : 198,
+			"Status" : "Confirmed",
+			"Location" : "PUNE",
+			"Total" : "",
+			"Items" :[
+				{
+					"sequence" : 0,
+					"sku" : "1F810A",
+					"name" : "Cookies",
+					"quantity" :"50",
+					"price" : 100,
+					"vantage-points": ""
+				},
+				{
+					"sequence" : 0,
+					"sku" : "1FZ20A",
+					"name" : "Soap",
+					"quantity" :"50",
+					"price" : 200,
+					"vantage-points": ""
+				}
+			]
+		},
+		{
+			"Number" : 199,
+			"Status" : "Confirmed",
+			"Location" : "PUNE",
+			"Total" : "",
+			"Items" :[
+				{
+					"sequence" : 1,
+					"sku" : "1F810A",
+					"name" : "Cookies",
+					"quantity" :"50",
+					"price" : 100,
+					"vantage-points": ""
+				},
+				{
+					"sequence" : 1,
+					"sku" : "1FZ20A",
+					"name" : "Soap",
+					"quantity" :"50",
+					"price" : 600,
+					"vantage-points": ""
+				}
+			]
+		}  
+	]
+}
+---
+{
+	sumOfPrices : orders.Orders[0].Items reduce (item,acc=0) -> acc + item.price,
+	sumOfPrices : orders.Orders map(object,index) -> object.Items reduce (item,acc=0) -> acc + item.price,
+	sumOfPricesAll :(orders.Orders map(object,index) -> object.Items reduce (item,acc=0) -> acc + item.price) reduce $ +$$,
+	
+	//300+700=1000
+	 
+	TotalPriceCalculation : orders.Orders map(object,index) -> (
+		object mapObject(value,key,objIndex) ->(
+			if((key) as String == 'Total')
+				'Total' : orders.Orders[index].Items reduce (item,acc=0) -> acc + item.price
+			else
+				(key) : value
+		)
+	),
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="c2f38dac-2bfa-4b85-887f-b075daa14a4d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var points = {"PUNE1F810A50":"30","PUNE1FZ20A50":"20"}
+var pointsMapping = ['Location','sku','quantity']
+fun getVantagePoints(headers,lines)=pointsMapping reduce(item,acc='') -> acc ++ (
+	(
+		if(item as String == 'Location')
+			headers.Location
+		else
+			lines[item]
+	)
+)
+var orders= {
+	"Orders" : [
+		{
+			"Number" : 198,
+			"Status" : "Confirmed",
+			"Location" : "PUNE",
+			"Total" : "",
+			"Items" :[
+				{
+					"sequence" : 0,
+					"sku" : "1F810A",
+					"name" : "Cookies",
+					"quantity" :"50",
+					"price" : 100,
+					"vantage-points": ""
+				},
+				{
+					"sequence" : 0,
+					"sku" : "1FZ20A",
+					"name" : "Soap",
+					"quantity" :"50",
+					"price" : 200,
+					"vantage-points": ""
+				}
+			]
+		} 
+	]
+}
+---
+//if we want to add vantage points and total price which are empty in above
+{
+	addVantages : orders.Orders map(object,index) -> (
+		object mapObject(value,key,objIndex) ->(
+			if((key) as String == 'Total')
+				'Total' : orders.Orders[index].Items reduce (item,acc=0) -> acc + item.price
+			else if((key) as String == 'Items')
+				"Items": value map(o,i) ->{
+					(
+						 
+						 o mapObject(ivalue,ikey,iobjindex) ->{
+							(
+								if((ikey) as String == 'vantage-points')
+									'vantage-points' : points[getVantagePoints(object,o)] as Number
+								else
+									(ikey) : ivalue
+							)
+						}
+						
+						
+					)
+				}
+			else
+				(key) : value
+		)
+	)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
