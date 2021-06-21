@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="aa5cc97a-84e7-4d2c-8054-a3af97ddb637" >
+		<http:listener-connection host="0.0.0.0" port="8048" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a4d096cf-237f-4bff-ac85-e7e0fc5f404f" >
+		<http:request-connection host="dummy.restapiexample.com" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="d7bb4f51-e852-4a7c-bb34-4518f50bb873" >
+		<http:request-connection host="dummy.restapiexample.com" />
+	</http:request-config>
+	<flow name="UntilSuccessfulFlow" doc:id="f6a0425f-9b00-430b-b207-6737449f5887" >
+		<http:listener doc:name="Listener" doc:id="930438d3-9a23-4a4a-8f3b-d601062de4ad" config-ref="HTTP_Listener_config" path="until"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="04e7fc8f-c203-44a7-a3a0-9066441fb81a" millisBetweenRetries="6000">
+			<http:request method="GET" doc:name="Request" doc:id="032e8136-17e5-48ac-bbf0-df53c39cf8ac" config-ref="HTTP_Request_configuration" path="/api/v1/employees" />
+		</until-successful>
+	</flow>
+	<flow name="UntilSuccessfulFlow1" doc:id="c6a6fce8-d776-4963-89eb-38a1c8c2ae45" >
+		<http:listener doc:name="Listener" doc:id="011516e4-39e6-4590-a668-bb5680184903" config-ref="HTTP_Listener_config" path="failcase"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="2e3cf6a3-956e-445e-839f-15c1d39aca15" millisBetweenRetries="6000">
+			<http:request method="GET" doc:name="Request" doc:id="4888d106-1f15-4099-9e27-6aaea3acba7c" config-ref="HTTP_Request_configuration1" path="/api/v1/employees12" />
+		</until-successful>
+	</flow>
+</mule>

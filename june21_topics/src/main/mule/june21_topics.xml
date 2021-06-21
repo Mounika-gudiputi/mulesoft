@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="precedence_example" doc:id="4ce06035-951e-4dd7-b621-16387aff5aa1" >
+		<ee:transform doc:name="Transform Message" doc:id="6b544046-e4ab-4c92-a97d-98f800472d8e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var flights = [
+  { "toAirport": "SFO", "price": 550, "airline": "American" },
+  { "toAirport": "MUA", "price": 200, "airline": "American" },
+  { "toAirport": "SFO", "price": 300, "airline": "American" },
+  { "toAirport": "CLE", "price": 600, "airline": "American" },
+  { "toAirport": "CLE", "price": 190, "airline": "American" },
+  { "toAirport": "SFO", "price": 400, "airline": "American" }
+]
+---
+{
+	key1 : flights filter $.price < 500 orderBy $.price groupBy $.toAirport,
+	key2 : flights orderBy $.price filter $.price < 500 groupBy $.toAirport,
+	key3 : ( ( ( flights filter $.price < 500 ) orderBy $.price ) groupBy $.toAirport ),
+	key4 : flights orderBy $.price filter ($.price < 400) 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="distinctBy_orderBy_groupBy_joinBy" doc:id="7f187816-bf2c-49c4-8423-2d44f373e7cd" >
+		<ee:transform doc:name="Transform Message" doc:id="e04d3bfd-ad6f-4ae2-9edb-60841e70a029" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var empList=[
+	{
+		"empId" : 100,
+		"empName" : "Chinna",
+		"empStatus" : "A"
+	},
+	{
+		"empId" : 100,
+		"empName" : "Chinna",
+		"empStatus" : "A"
+	},
+	{
+		"empId" : 101,
+		"empName" : "Mark",
+		"empStatus" : "I"
+	},
+	{
+		"empId" : 103,
+		"empName" : "John",
+		"empStatus" : "I"
+	},
+	{
+		"empId" : 102,
+		"empName" : "Stella",
+		"empStatus" : "A"
+	}
+]
+---
+{
+	"distinctByEmployees" : empList distinctBy(item,index) -> item,  //no duplicates
+	"orderByEmployeesAsc" : empList orderBy $.empId, //prints in ascending order of id's
+	"orderByEmployeesDsc" : empList orderBy -$.empId, //prints in descending order of id's
+	"groupByEmployeesByStatus" : empList groupBy $.empStatus,
+	"inactiveEmployees" : (empList filter($.empStatus == "I")).empId,
+	"inactiveEmployeesUsingJoinBy" : (empList filter($.empStatus == "I")).empId joinBy ", ",
+	"employeesAll" : empList distinctBy $ orderBy $.empId map(emp, indexOfEmp) -> {
+		"employeeId" : emp.empId,
+		"employeeName" : emp.empName,
+		"employeeStatus" : emp.empStatus
+	},
+	"employees" : empList filter($.empStatus == "A") distinctBy $ orderBy $.empId map(emp, indexOfEmp) -> {
+		"employeeId" : emp.empId,
+		"employeeName" : emp.empName,
+		"employeeStatus" : emp.empStatus
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="refined_error_handling" doc:id="11b8ee16-c908-44ee-9d20-881322f078ae" >
+		<ee:transform doc:name="Transform Message" doc:id="097bb965-691b-4568-8677-e61c6b75a1cd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::Runtime
+fun validate(array :Array) = array map(value, index) -> (if((value mod 2)!=0) fail('the number ' ++ value++ ' is not even') else value)
+fun checkString(arg) = if(arg=='invalid') fail('invalid') else arg
+---
+{
+	//check for even or odd,if odd raises exception
+	key1 : validate([2,4,6,8,10]),
+	key2 : [2,4,6,8,10] map(value, index) -> value failIf((value mod 2)!=0), //failIf works like above function 'validate'
+	key3 : [2,4,6,8,10] map(value, index) -> failIf(value,((value)->(value mod 2)!=0),'error occured'),
+	//fail cases :-
+	/*
+	 * key1 : validate([2,4,6,1,10]) //it raises exception with our message "the number 1 is not even"
+	   key2 : [2,4,6,1,10] map(value, index) -> value failIf((value mod 2)!=0), //raises exception
+	   key3 : [2,4,6,1,10] map(value, index) -> failIf(value,((value)->(value mod 2)!=0),'error occured'),
+	 */
+	"sampleTry" : try(()->checkString('va')),
+	"sampleTry2" : try(()->checkString('invalid')),
+	"tryEvenOdd" : [2,4,6,1,10] map(value, index) -> try(() -> failIf(value,((value)->(value mod 2)!=0),'error occured')),
+	"orElseTry" : [2,4,6,1,5] map(value, index) -> try(() -> failIf(value,((value)->(value mod 2)!=0),'error occured'))
+					orElseTry(() -> failIf(value,((value)->(value mod 3)!=0),'not divided by 3'))
+					orElse('invalid number')
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="35584967-c254-4b36-9fa6-6d5b0e55624a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import try,fail from dw::Runtime
+var orders={
+			"Number" : 200,
+			"Channel" : "partner",
+			"Status" : "Confirmed",
+			"Payment" : "prepaid",
+			"Location" : "PUNE",
+			"Total" : "",
+			"Items" :
+				{
+					"sequence" : 0,
+					"sku" : "1F810A",
+					"name" : "Cookies",
+					"quantity" :"50",
+					"price" : 100,
+					"vantage-points": ""
+				}
+			
+		}
+---
+{
+	sample : orders mapObject(value,key,index) -> {
+		(if(key as String == 'Items')
+			"Item" : 'some value'
+		else
+			(key) :value
+		)
+	},
+	//now try to make 'Items' as an array
+	tryArray : orders mapObject(value,key,index) -> {
+		(if(key as String == 'Items')
+			(key) :(if(try(()-> value map $).success) //It checks array or not. For that map is used because map is for array
+				(value)
+				else
+					[(value)] //If that is not array, this else block makes that as an array
+			)
+		else
+			(key) :value
+		)
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
