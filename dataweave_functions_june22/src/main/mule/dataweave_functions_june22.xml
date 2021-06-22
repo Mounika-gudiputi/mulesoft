@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dw::Core" doc:id="9155a871-8a3a-4536-994e-f534da763c34" >
+		<ee:transform doc:name="Transform Message" doc:id="79a5dca3-e67c-4493-a8ec-67c95be08d02" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{ 
+	//++ operator
+	"result" : [0, 1, 2] ++ ["a", "b", "c"],
+	"a" : [0, 1, true, "my string"] ++ [2, [3,4,5], {"a": 6}],
+	"name" : "Mule" ++ "Soft",
+	concat : {aa: "a", bb: "b"} ++ {cc: "c"},
+	"LocalDateTime" : (|2017-10-01| ++ |23:57:59|),
+	"LocalDateTime" : (|23:57:59| ++ |2003-10-01|),
+	dateTime : [ |2017-10-01| ++ |23:57:59-03:00|, |2017-10-01| ++ |23:57:59Z| ],
+	"DateTime" : (|2003-10-01T23:57:59| ++ |-03:00|),
+	//-- operator
+	"a" : [0, 1, 1, 2] -- [1,2] ,
+	"on objects" : { "hello" : "world", "name" : "DW" } -- { "hello" : "world"},
+	"usingKeys" : { "yes" : "no", "good" : "bad", "old" : "new" } -- ["yes", "old"],
+	"usingKey" : { "hello" : "world", "name" : "DW" } -- ["hello" as Key]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="a20a3bef-81d1-404a-8d1a-acb3cd3b41ad" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var ex= read('<root><mystring>some string</mystring></root>','application/xml')
+var myVar = read('<xml attr="x"><a>true</a><b>1</b></xml>', 'application/xml')
+---
+{ 
+	"abs function" : [ abs(-2), abs(2.5), abs(-3.4), abs(3) ],
+	"avg function": avg([1, 1000]),
+	"avg funtion": avg([1, 2, 3]),
+	"ceil function" : [ ceil(1.5), ceil(2.1), ceil(3) ],
+	"contains" : [ 1, 2, 3, 4 ] contains(2),
+	"contains" : "mulesoft" contains("mule"),
+	ContainsString : ex.root.mystring contains("me"),
+	ContainsString2: ex.root.mystring contains /s[t|p]rin/,
+	"params example" : contains("mulesoft", /[e-g]/),
+	days : daysBetween('2016-10-01T23:57:59-03:00', '2017-10-01T23:57:59-03:00'),
+	"endsWith example" : [ "Mariano" endsWith "no", "Mariano" endsWith "to" ],
+	"entriesOf" : entriesOf(myVar) 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="ae185530-6600-4f92-90da-b0756da71f39" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var o = {
+    str1 : "String 1",
+    str2 : "String 2",
+    str3 : null,
+    str4 : "String 4",
+}
+var users = [
+   {
+      "user": {
+         "name": "123",
+         "lastName": "Smith"
+      },
+      "error": "That name doesn't exists"
+   },
+   {
+      "user": {
+         "name": "John",
+         "lastName": "Johnson"
+      },
+      "error": null
+   }
+]
+---
+{ 
+	"filter on array" : [9,2,3,4,5] filter (value, index) -> (value > 2),
+	"filter using index" :[9,2,3,4,5] filter ((value, index) -> (index > 2)),
+	"filter" : [9, 2, 3, 4, 5] filter (($$ > 1) and ($ < 5)),
+	"filter object" : {"a" : "apple", "b" : "banana"} filterObject ((value) -> value == "apple"),
+	"filter object" : {"letter1": "a", "letter2": "b", "id": 1} filterObject ((value, key) -> key startsWith "letter"),
+	"filterObject index" : { "1": "a", "2": "b", "3": "c"} filterObject ((value, key, index) -> index < 1),
+	"filterObject" : o filterObject $ != null
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="b6d638d3-4f8a-4917-a6f2-08a4a09e87e9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var someString = "something"
+var nullString = null
+---
+{
+	"find in array" : ["Bond", "James", "Bond"] find "Bond",
+	"find lettets" : "aabccdbce" find "a",
+	"flatMap example" : [ [3,5], [0.9,5.5] ] flatMap (value, index) -> value,
+	"floor function" : [ floor(1.5), floor(2.2), floor(3) ],
+	// checking if the string is blank
+	  "emptyString" : isBlank(""),
+	  "stringWithSpaces" : isBlank("      "),
+	  "textString" : isBlank(someString),
+	  "nullString" : isBlank(nullString),
+	
+	  // checking if the string is not blank
+	  "notEmptyTextString" : not isBlank(" 1234"),
+	  "notEmptyTextStringTwo" : ! isBlank(""),
+	  "is decimal example" : [ isDecimal(1.1), isDecimal(1), isDecimal("1.1") ],
+	  "is empty" : [ isEmpty([]), isEmpty([1]) ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dw::core::Arrays" doc:id="fae7e64f-0598-4705-9f01-2a504352401b" >
+		<ee:transform doc:name="Transform Message" doc:id="ebe07401-962e-4c5c-972b-8b77ca4049a9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ import * from dw::core::Arrays
+ output application/json
+ var users = ["Mariano", "Leandro", "Julian"]
+ var arr = [0,1,3,2,1]
+ var userObjects = [{name: "Mariano", lastName: "Achaval"}, {name: "Ana", lastName: "Felisatti"}, {name: "Mariano", lastName: "de Sousa"}]
+ ---
+{ 
+	"countBy" : [1, 2, 3, 4] countBy (($ mod 2) == 0),
+	"divideBy" : [
+	      { "divideBy2" : [1, 2, 3, 4, 5] divideBy 2 },
+	      { "divideBy2" : [1, 2, 3, 4, 5, 6] divideBy 2 },
+	      { "divideBy3" : [1, 2, 3, 4, 5] divideBy 3 }
+	  ],
+	 "drop" :drop(users,2),
+	 "dropWhile" :arr dropWhile $ < 3,
+	 "every" : [1,1,1] every ($ == 1),
+	 "every" : [1,1,0] every ($ == 1),
+	 
+	"firstWith": userObjects firstWith ((user, index) -> user.name == "Mariano"),
+  	"firstWith": userObjects firstWith ((user, index) -> user.name == "Peter"),
+  	"indexOf" : indexOf(users, "Julian"),
+  	"indexWhere" : users indexWhere (item) -> item startsWith "Jul",
+  	"partition" :arr partition (item) -> isEven(item),
+  	"slice" : slice(arr, 1, 4),
+  	"some" :[1,2,3] some (($ mod 2) == 0),
+	"some" :[1,2,3] some ($ == 100),
+	"splitAt" : users splitAt 1,
+	"splitWhere" : users splitWhere (item) -> item startsWith "Jul",
+	"sumBy" : [
+		    [ { a: 1 }, { a: 2 }, { a: 3 } ] sumBy $.a,
+		    sumBy([ { a: 1 }, { a: 2 }, { a: 3 } ], (item) -> item.a)
+		  ],
+	"take" : take(users, 2),
+	"takeWhile" : arr takeWhile $ <= 1
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
