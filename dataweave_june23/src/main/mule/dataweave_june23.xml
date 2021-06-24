@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="dw::core::Strings" doc:id="44e59355-dd17-42f7-aaaf-2340d57bd7c7" >
+		<ee:transform doc:name="Transform Message" doc:id="d80cca9e-b18d-4071-8ce5-958534fe55a1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+{
+	"appendIfMissing": {
+		"a": appendIfMissing(null, ""),
+		"b": appendIfMissing("abc", ""),
+		"c": appendIfMissing("", "xyz") ,
+		"d": appendIfMissing("abc", "xyz") ,
+		"e": appendIfMissing("abcxyz", "xyz")
+	},
+	
+	"camelize" : {
+		"a" : camelize("customer_first_name"),
+  		"b" : camelize("_name_starts_with_underscore")
+	},
+  	"capitalize" :{
+  		"a" : capitalize("customer"),
+	  	"b" : capitalize("customer_first_name"),
+	  	"c" : capitalize("customer NAME"),
+		"d" : capitalize("customerName")
+  	},
+  	
+	
+	//charCode, charCodeAt, fromCharCode
+	"charCode" : charCode("Mule"),
+	"charCodeAt" : charCodeAt("MuleSoft", 1),
+	"fromCharCode" : fromCharCode(117),
+	
+	"dasherizde" : {
+		"a" : dasherize("customer"),
+	  	"b" : dasherize("customer_first_name"),
+	  	"c" : dasherize("customer NAME"),
+	  	"d" : dasherize("customerName")
+	},
+	
+  	"isAlpha": {
+  		"a": isAlpha(null),
+	  	"b": isAlpha(""),
+	  	"c": isAlpha("  "),
+	  	"d": isAlpha("abc"),
+	  	"e": isAlpha("ab2c"),
+	  	"f": isAlpha("ab-c")
+  	},
+  	
+  	"isAlphanumeric" : {
+  		"a": isAlphanumeric(null),
+	  	"b": isAlphanumeric(""),
+	  	"c": isAlphanumeric("  "),
+	  	"d": isAlphanumeric("abc"),
+	  	"e": isAlphanumeric("ab c"),
+	  	"f": isAlphanumeric("ab2c"),
+	  	"g": isAlphanumeric("ab-c")
+  	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="8afde99a-9e74-4448-88be-6f42101afb4e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+{
+	"isLowerCase" : {
+		"a": isLowerCase(null),
+	  	"b": isLowerCase(""),
+	  	"c": isLowerCase("  "),
+	  	"d": isLowerCase("abc"),
+	  	"e": isLowerCase("aBC"),
+	  	"f": isLowerCase("a c"),
+	  	"g": isLowerCase("a1c"),
+	  	"h": isLowerCase("a/c")
+	},
+  	"isNumeric" :{
+	  	"a": isNumeric(null),
+	  	"b": isNumeric(""),
+	  	"c": isNumeric("  "),
+	  	"d": isNumeric("123"),
+	  	"e": isNumeric("१२३"),
+	  	"f": isNumeric("12 3"),
+	  	"g": isNumeric("ab2c"),
+	  	"h": isNumeric("12-3"),
+	  	"i": isNumeric("12.3"),
+	  	"j": isNumeric("-123"),
+	  	"k": isNumeric("+123")
+  	},
+  	
+  	"isUpperCase" : {
+  		"a": isUpperCase(null),
+	  	"b": isUpperCase(""),
+	  	"c": isUpperCase("  "),
+	  	"d": isUpperCase("ABC"),
+	  	"e": isUpperCase("aBC"),
+	 	"f": isUpperCase("A C"),
+	  	"g": isUpperCase("A1C"),
+	  	"h": isUpperCase("A/C")
+  	},
+  	"isWhiteSpace" :{
+  		"a": isWhitespace(null),
+  		"b": isWhitespace(""),
+  		"c": isWhitespace("  "),
+  		"d": isWhitespace("abc"),
+  		"e": isWhitespace("ab2c"),
+  		"f": isWhitespace("ab-c")
+  	}
+  	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="6b839b6b-4d53-4223-b4b5-25bd787c747f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+{
+	"leftPad" : {
+	   "a": leftPad(null, 3),
+	   "b": leftPad("", 3),
+	   "c": leftPad("bat", 5),
+	   "d": leftPad("bat", 3),
+	   "e": leftPad("bat", -1)
+	},
+	"ordinalize" : {
+		 "a" : ordinalize(1),
+		 "b": ordinalize(2),
+		 "c": ordinalize(5),
+		 "d": ordinalize(103)
+	},
+	"pluralize" : pluralize("box"),
+	"prependIfMissing" :{
+		  "a": prependIfMissing(null, ""),
+		  "b": prependIfMissing("abc", ""),
+		  "c": prependIfMissing("", "xyz"),
+		  "d": prependIfMissing("abc", "xyz"),
+		  "e": prependIfMissing("xyzabc", "xyz")
+	},
+	"repeat" : {
+	  "a": repeat("e", 0),
+	  "b": repeat("e", 3),
+	  "c": repeat("e", -2)
+	},
+	"rightPad" : {
+	  "a": rightPad(null, 3),
+	  "b": rightPad("", 3),
+	  "c": rightPad("bat", 5),
+	  "d": rightPad("bat", 3),
+	  "e": rightPad("bat", -1)
+	},
+	"singularize" : singularize("boxes")
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="2e7b0a05-9a70-4b7d-8e3c-4698ab66a7ea" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+{
+	"substringAfter" :{
+	  "a": substringAfter(null, "'"),
+	  "b": substringAfter("", "-"),
+	  "c": substringAfter("abc", "b"),
+	  "d": substringAfter("abcba", "b"),
+	  "e": substringAfter("abc", "d"),
+	  "f": substringAfter("abc", "")
+	},
+	"substringAfterLast" : {
+	  "a": substringAfterLast(null, "'"),
+	  "b": substringAfterLast("", "-"),
+	  "c": substringAfterLast("abc", "b"),
+	  "d": substringAfterLast("abcba", "b"),
+	  "e": substringAfterLast("abc", "d"),
+	  "f": substringAfterLast("abc", "")
+	},
+	"substringBefore" : {
+	  "a": substringBefore(null, "'"),
+	  "b": substringBefore("", "-"),
+	  "c": substringBefore("abc", "b"),
+	  "d": substringBefore("abc", "c"),
+	  "e": substringBefore("abc", "d"),
+	  "f": substringBefore("abc", "")
+	},
+	"substringBeforeLast" : {
+	  "a": substringBeforeLast(null, "'"),
+	  "b": substringBeforeLast("", "-"),
+	  "c": substringBeforeLast("abc", "b"),
+	  "d": substringBeforeLast("abcba", "b"),
+	  "e": substringBeforeLast("abc", "d"),
+	  "f": substringBeforeLast("abc", "")
+	},
+	"underscore" : {
+	   "a" : underscore("customer"),
+	   "b" : underscore("customer-first-name"),
+	   "c" : underscore("customer NAME"),
+	   "d" : underscore("customerName")
+	},
+	"unwrap" : {
+	  "a": unwrap(null, ""),
+	  "b": unwrap(null, '\0'),
+	  "c": unwrap("'abc'", "'"),
+	  "d": unwrap("AABabcBAA", 'A'),
+	  "e": unwrap("A", '#'),
+	  "f": unwrap("#A", '#'),
+	  "g": unwrap("A#", '#')
+	},
+	"withMaxSize" : {
+	   a: "123" withMaxSize 10,
+	   b: "123" withMaxSize 3,
+	   c: "123" withMaxSize 2,
+	   d: "" withMaxSize 3,
+	   e: null withMaxSize 23
+	},
+	"wrapIfMissing" : {
+	   "a": wrapIfMissing(null, "'"),
+	   "b": wrapIfMissing("", "'"),
+	   "c": wrapIfMissing("ab", "x"),
+	   "d": wrapIfMissing("'ab'", "'"),
+	   "e": wrapIfMissing("/", '/'),
+	   "f": wrapIfMissing("a/b/c", '/'),
+	   "g": wrapIfMissing("/a/b/c", '/'),
+	   "h": wrapIfMissing("a/b/c/", '/')
+	 },
+	 "wrapWith" : {
+	  "a": wrapWith(null, "'"),
+	  "b": wrapWith("", "'"),
+	  "c": wrapWith("ab", "x"),
+	  "d": wrapWith("'ab'", "'"),
+	  "e": wrapWith("ab", "'")
+	}
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dw::core::Objects" doc:id="047f9c82-eae1-47a7-aa56-e92e53e8ee3f" >
+		<ee:transform doc:name="Transform Message" doc:id="386f9b01-a7e0-490b-82a7-6dcba3dc5ea0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+var myVar = read('<xml attr="x"><a>true</a><b>1</b></xml>', 'application/xml')
+var myVar2 = read('<users xmlns="http://test.com">
+                     <user name="Mariano" lastName="Achaval"/>
+                     <user name="Stacey" lastName="Duke"/>
+                  </users>', 'application/xml')
+var obj = {
+  "a": 1,
+  "b": 2,
+  "c": 5,
+  "d": 1
+}
+output application/json
+---
+{ 
+	"divideBy" : {"a": 1, "b" : true, "a" : 2, "b" : false, "c" : 3} divideBy 2,
+	"entrySet" : entrySet(myVar),
+	"everyEntry" : {
+	    a: {} everyEntry (value, key) -> value is String,
+	    b: {a: "", b: "123"} everyEntry (value, key) -> value is String,
+	    c: {a: "", b: 123} everyEntry (value, key) -> value is String,
+	    d: {a: "", b: 123} everyEntry (value, key) -> key as String == "a",
+	    e: {a: ""} everyEntry (value, key) -> key as String == "a",
+	    f: null everyEntry ((value, key) -> key as String == "a")
+	},
+	"mergeWith" : { "a" : true, "b" : 1} mergeWith { "a" : false, "c" : "Test"},
+	"keySet" : keySet({ "a" : true, "b" : 1}),
+	"nameSet" : nameSet({ "a" : true, "b" : 1}),
+	/*difference between keySet and nameSet is
+	 *  keySet retains the attributes and namespaces  from the XML input, 
+	 * while nameSet returns null for them because it does not retain them.
+	 * */ 
+	
+	"someEntry" : {
+		    a: {} someEntry (value, key) -> value is String,
+		    b: {a: "", b: "123"} someEntry (value, key) -> value is String,
+		    c: {a: "", b: 123} someEntry (value, key) -> value is String,
+		    d: {a: "", b: 123} someEntry (value, key) -> key as String == "a",
+		    e: {a: ""} someEntry (value, key) -> key as String == "b",
+		    f: null someEntry (value, key) -> key as String == "a"
+		},
+	"takeWhile" : obj takeWhile ((value, key) ->  value < 3),
+	"valueSet" : valueSet({a: true, b: 1})
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dw::core::Numbers" doc:id="ea46d44b-1dba-4d7a-8626-0900506c3e43" >
+		<ee:transform doc:name="Transform Message" doc:id="d4513f39-c78a-4bb4-8f6a-fd18b6385612" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Numbers
+output application/json
+---
+{
+	"fromBinary" :{
+	    a: fromBinary("-10"),
+	    b: fromBinary("11111000111010111010110100101011100001001110000011010101100010111101001011100000100010011000011101100101101001111101111010110010010100110010100100000"),
+	    c: fromBinary("0"),
+	    d: fromBinary(null),
+	    e: fromBinary("100"),
+	},
+	"fromHex" : {
+	    a: fromHex("-1"),
+	    b: fromHex("3e3aeb4ae1383562f4b82261d969f7ac94ca4000000000000000"),
+	    c: fromHex(0),
+	    d: fromHex(null),
+	    e: fromHex("f"),
+	},
+	"fromRadixNumber" : {
+	    a: fromRadixNumber("10", 2),
+	    b: fromRadixNumber("FF", 16)
+	},
+	"toBinary" : {
+	    a: toBinary(-2),
+	    b: toBinary(10000000000000000000000000),
+	    c: toBinary(0),
+	    d: toBinary(null),
+	    e: toBinary(2),
+	},
+	"toHex" : {
+	    a: toHex(-1),
+	    b: toHex(10000000000000000000000000000000000000000),
+	    c: toHex(0),
+	    d: toHex(null),
+	    e: toHex(15),
+	},
+	"toRadixNumber" : {
+	    a: toRadixNumber(2, 2),
+	    b: toRadixNumber(255, 16)
+	}
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dw::Runtime" doc:id="3e03ac3f-a9af-4863-992b-42aa3913f66c" >
+		<ee:transform doc:name="Transform Message" doc:id="a58f3f23-41f1-4a03-bfa1-5405c9c56e7b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::Runtime
+var a = 123
+var user = {}
+var user2 = {}
+var otherUser = {name: "DW"}
+output application/json
+fun randomNumber() =
+if(random() > 0.5)
+  fail("This function is failing")
+ else
+  "OK"
+---
+{
+	"locationString" :locationString(a),
+	"try" : try(() -> randomNumber()),
+	"try, orElse" :{
+	    a: try(() -> user.name!) orElse "No User Name",
+	    b: try(() -> otherUser.name) orElse "No User Name"
+	},
+	"orElseTry" : {
+	    a: try(() -> user.name!) orElseTry user2.name!,
+	    b: try(() -> user.name!) orElseTry "No User Name"
+	},
+	"wait" : { "user" : 1 } wait 2000,//2 seconds to execute
+	"prop" : prop("user.timezone"),
+	"props" : props() //This example returns all properties from the java.util.Properties class.
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
