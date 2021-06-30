@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dataweave_funtions_june29Flow" doc:id="eee41a16-3a25-4064-a27e-36a1dde15e52" >
+		<ee:transform doc:name="map function" doc:id="fae57d6c-4d3e-41b4-b73b-98f70cd73b36" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var arr=[1,2,3,4,5]
+var objs=[
+  { "id": 1, "name": "Archer" },
+  { "id": 2, "name": "Cyril"  },
+  { "id": 3, "name": "Pam"    }
+]
+var names=[
+  { "name": "Archer" },
+  { "name": "Cyril"  },
+  { "name": "Pam"    }
+]
+var jobroles=[
+  { 
+    "name": "Archer",
+    "jobs": [
+      { "type": "developer" },
+      { "type": "investor"  },
+      { "type": "educator"  } 
+    ] 
+  },
+  {
+    "name": "Cyril",
+    "jobs": [
+      { "type": "developer"    },
+      { "type": "entrepreneur" },
+      { "type": "lion tamer"   }
+    ]
+  } 
+]
+---
+{
+	"increment_arr_by_1" : arr map(val,index) -> val + 1,
+	"get_ids" : objs map ($.id),
+	"set ids" : names map {
+		id : $$+1,
+		name : $.name
+	},
+	"set job numbers" : jobroles map(value,index) ->{
+		number : index+1,
+		name : value.name,
+		job: value.jobs map(v,i)->{
+			number :i+1,
+			"type" : v."type"
+		}
+	}
+}	
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="filter function" doc:id="9002d3c6-e371-4ebd-a6bb-b43b3396360f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var arr=[1,2,3,4,5]
+var list=[
+  {
+    "id": 1,
+    "status": "waiting"
+  },
+  {
+    "id": 2,
+    "status": "processed"
+  },
+  {
+    "id": 3,
+    "status": "waiting"
+  }
+]
+var sample1=[
+  "starting", 
+  "waiting", 
+  "deleted", 
+  "processing", 
+  "processed"
+]
+var sample2 = ["deleted", "processed"]
+---
+{
+	"remove odd values" : arr  filter((value,index) ->((value mod 2 )==0)),
+	"remove even indexes" : arr  filter((value,index) ->((index mod 2 )!=0)),
+	"remove objects" : list filter($.status !="processed"),
+	"remove ele" : 
+		(sample1 filter((v,i) -> (sample2[0] !=v and sample2[1] !=v)) map(value,index)-> (value))
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="mapObject" doc:id="7198fb92-05e6-496a-a0f0-32fed0be8fb8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var obj={
+  "one":   "two",
+  "three": "four",
+  "five":  "six"
+}
+var obj2={
+  "one":   "two",
+  "three": null,
+  "five":  null
+}
+---
+{
+	"uppercase values" : obj mapObject{
+		(upper($$)) : upper($)
+	},
+	"remove null values" : obj2 filterObject($!= null)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dataweave_funtions_june29Flow1" doc:id="3bf03b4e-2e1e-4ceb-97af-6bb8be09f64e" >
+		<ee:transform doc:name="pluck" doc:id="6041cb55-7f32-4120-a781-83b38e7c9f47" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var obj={
+  "one":   "1",
+  "three": "3",
+  "five":  "5"
+}
+---
+{
+	"list of values" : obj pluck $,
+	"list of keys" : obj pluck $$,
+	"create array of objects" : obj pluck{
+		($$) : $
+	},
+	"create array of arrays" : obj pluck [($$) ,$],
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="merging" doc:id="71a78f8b-669d-407d-8d63-fc2320400fa1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var invoices = [
+  {
+    "invoiceId": 1,
+    "amount":    100 },
+  {
+    "invoiceId": 2,
+    "amount":    200 },
+  {
+    "invoiceId": 3,
+    "amount":    300 }
+]
+var allocations = [
+  {
+    "allocationId":     1,
+    "invoiceId":        1,
+    "allocationAmount": 50 },
+  {
+    "allocationId":     2,
+    "invoiceId":        1,
+    "allocationAmount": 50 },
+  {
+    "allocationId":     3,
+    "invoiceId":        2,
+    "allocationAmount": 100 },
+  {
+    "allocationId":     4,
+    "invoiceId":        2,
+    "allocationAmount": 100 },
+  {
+    "allocationId":     5,
+    "invoiceId":        3,
+    "allocationAmount": 150 },
+  {
+    "allocationId":     6,
+    "invoiceId":        3,
+    "allocationAmount": 150 }]
+---
+{
+	"merge" : invoices map(value,index) -> {
+		"invoiceId" : value.invoiceId,
+		"amount" : value.amount,
+		"allocations" : allocations filter($.invoiceId==value.invoiceId)
+	}
+} ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="pluck and groupBy" doc:id="0c54a652-5bbc-41f3-b0aa-4949f9290b03" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var csvFile= readUrl("classpath://sample.csv","application/csv")
+var lineItemsByInvoice = csvFile groupBy ($.invoiceId)
+---
+(lineItemsByInvoice pluck $$) map (value) ->
+{
+	"invoiceId": value,
+	"vendorName": (lineItemsByInvoice[value as String].vendorName[0]),
+	"total": (lineItemsByInvoice[value as String].total[0]),
+	"lineItems": (lineItemsByInvoice[value as String] map {"item": $.lineItem, "amount": $.lineItemAmount})
+}
+	
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
