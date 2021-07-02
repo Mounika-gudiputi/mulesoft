@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2f5843cb-82c2-463e-81e6-d4f505ddea31" >
+		<http:listener-connection host="0.0.0.0" port="8031" />
+	</http:listener-config>
+	<flow name="file_operations_july2Flow" doc:id="bb7a8127-2010-478c-9624-c3ce39ba59ee" >
+		<http:listener doc:name="Listener" doc:id="ef02f14c-2170-4353-84fd-11e0114c75a8" config-ref="HTTP_Listener_config" path="file"/>
+		<file:read doc:name="Read" doc:id="8d005b8a-21f8-4974-b485-bee1fa333989" path="C:\Users\Mounika Gudiputi\Documents\file-operations\input.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="02dad516-0c32-4c38-8f0b-893066f438ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	places : payload map(data,index) -> {
+		id :data.ID,
+		place : data.AreaCode,
+		population : data.Population
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write" doc:id="e54355b4-701a-425b-99c9-d031de0b99d9" path="C:\Users\Mounika Gudiputi\Documents\file-operations\myFile"/>
+		<file:move doc:name="Move" doc:id="9693916d-267e-4387-b236-20a5c908c2f7" sourcePath="C:\Users\Mounika Gudiputi\Documents\file-operations\move" targetPath="C:\Users\Mounika Gudiputi\Desktop"/>
+		<file:list doc:name="List" doc:id="a1b02f7b-3a93-4a89-9430-63c154ab86c9" directoryPath="C:\Users\Mounika Gudiputi\Documents\file-operations"/>
+		<file:create-directory doc:name="Create directory" doc:id="ea208c8a-0d2d-44a4-84f5-b158b59ec353" directoryPath="C:\Users\Mounika Gudiputi\Desktop\create"/>
+		<file:copy doc:name="Copy" doc:id="e6aba608-83a1-4600-85c1-b1b7f90b11f0" sourcePath="C:\Users\Mounika Gudiputi\Documents\file-operations\copy" targetPath="C:\Users\Mounika Gudiputi\Desktop\paste"/>
+	</flow>
+</mule>
