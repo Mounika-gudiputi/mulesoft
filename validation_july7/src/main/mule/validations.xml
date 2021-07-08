@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="validationsFlow" doc:id="8f8e14b6-d275-4b98-be97-0a2edb523166" >
+		<http:listener doc:name="Listener" doc:id="4fe9ff5e-f565-4521-b214-c4aed2e839f5" config-ref="HTTP_Listener_config" path="isUrl"/>
+		<validation:is-url doc:name="Is URL" doc:id="f726ef94-2376-4908-9709-c0548a16104b" url="#[payload.url]"/>
+	</flow>
+	<flow name="validationsFlow2" doc:id="adde0045-996c-4462-ad3b-1e8677b95a40" >
+		<http:listener doc:name="Listener" doc:id="4ba804e8-a814-4d58-ae24-12a34626e382" config-ref="HTTP_Listener_config" path="isEmptyColl"/>
+		<validation:is-empty-collection doc:name="Is empty collection" doc:id="e6ecb9f4-2891-42cb-9d92-87b7bde4f914" />
+	</flow>
+	<flow name="validationsFlow3" doc:id="cf57a9cb-f14e-4447-9278-dc03b446fb34" >
+		<http:listener doc:name="Listener" doc:id="3979a470-e71e-4ea9-a45d-c75d5f71df91" config-ref="HTTP_Listener_config" path="regex"/>
+		<validation:matches-regex doc:name="Matches regex" doc:id="8bc7d32e-7106-48d4-adb6-83bb845d959b" value="#[payload.regex]" regex="/^[A-z]+$/"/>
+	</flow>
+	<flow name="validationsFlow4" doc:id="7475f6f4-3567-46c0-8bb5-51c6de2a449f" >
+		<http:listener doc:name="Listener" doc:id="5acac266-1c77-4d5b-8797-7202e626a6dc" config-ref="HTTP_Listener_config" path="isTime"/>
+		<validation:is-time doc:name="Is time" doc:id="82c27ff1-153d-4c1b-9456-ce57129ba020" time="#[payload.time]"/>
+	</flow>
+</mule>

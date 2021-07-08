@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="98260c48-b039-4a66-bda1-b1cdb9e19f67" >
+		<http:listener-connection host="0.0.0.0" port="8032" />
+	</http:listener-config>
+	<flow name="validation_july7Flow" doc:id="92a8cbd6-afef-4d8a-95e9-a1deb009ede5" >
+		<http:listener doc:name="Listener" doc:id="1681bc2e-069f-43d1-a854-ab6a008b7115" config-ref="HTTP_Listener_config" path="ip"/>
+		<validation:is-ip doc:id="72bd298c-16c3-412d-8d0b-1083f315e1e9" ip="#[payload.ip]"/>
+	</flow>
+	<flow name="validation_july7Flow5" doc:id="821c22df-db53-4b30-8cab-b682c3c5502d" >
+		<http:listener doc:name="Listener" doc:id="41f39ec9-21d9-486e-a74e-22fa2d2cc6ed" config-ref="HTTP_Listener_config" path="number"/>
+		<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="eecb361d-12ba-41d1-b034-6cae8a0db516" value="140" minValue="50" maxValue="150"/>
+	</flow>
+	<flow name="validation_july7Flow1" doc:id="83b4ecdc-d3a5-44fc-bedb-6baa68289d0f" >
+		<http:listener doc:name="Listener" doc:id="d4a98720-d6a3-4584-bd96-d822ca575113" config-ref="HTTP_Listener_config" path="isNull"/>
+		<validation:is-null doc:name="Is null" doc:id="3ff000bb-2100-413e-9274-9b8f93ca162f" value="#[payload.nullCheck]" />
+	</flow>
+	<flow name="validation_july7Flow2" doc:id="d97cf82b-d8d6-4aae-8582-0d83586ba9e2" >
+		<http:listener doc:name="Listener" doc:id="2fecc02c-feec-4379-bbc4-ce338cb5ea9e" config-ref="HTTP_Listener_config" path="blankString"/>
+		<validation:is-blank-string doc:name="Is blank string" doc:id="f0b23a3d-8775-44d8-b72a-bf7d74be0c98" value="#[payload.blankString]" />
+	</flow>
+	<flow name="validation_july7Flow3" doc:id="9f121dbb-3725-4ab6-9afa-d2b24275e309" >
+		<http:listener doc:name="Listener" doc:id="b24bcc9b-030e-4a8e-8e07-26e74e409b5f" config-ref="HTTP_Listener_config" path="isEmail"/>
+		<validation:is-email doc:name="Is email" doc:id="0b545df3-37fa-4f32-85fb-7578fffd2c8a" email="#[payload.email]" />
+	</flow>
+	<flow name="validation_july7Flow4" doc:id="ee4e88d0-6746-4291-a1d3-fa42714494da" >
+		<http:listener doc:name="Listener" doc:id="d7fd4866-ed80-4f48-8c99-7f05327b8130" config-ref="HTTP_Listener_config" path="size"/>
+		<validation:validate-size doc:name="Validate size" doc:id="87ab6d04-72bf-4c32-bcfd-9225bac3dd8e" value="#[payload.size]" min="1" max="3" />
+	</flow>
+</mule>
