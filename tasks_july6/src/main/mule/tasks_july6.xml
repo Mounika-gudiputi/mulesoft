@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="tasks_july6Flow" doc:id="2215a766-78b7-4ff0-884d-7615a0d9f136" >
+		<ee:transform doc:name="Intersection function" doc:id="5cc954de-b2fe-48cd-9fb1-2ce053ab4b4f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+fun intersec(arr1,arr2)= arr1 map(value,index)-> (
+	arr2 filter(
+		(v,i)-> (value == v) 
+	)
+)
+fun intersection(array1,array2)= flatten(intersec(array1,array2 ) )  distinctBy(value) -> { "unique" : value }
+---
+{
+	"test1" : intersection([1,2,3],[2,3,4]) ,
+	"test2" : intersection([1,2,2,3],[2,2,3,4] ),
+	"test3" : intersection([1,2,3],[4,5,6])
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="group function" doc:id="9f060ac6-7b47-4115-8f3f-537059cfd9dd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+fun group(arr,n)= ([1 to ceil ((sizeOf (arr))/n)][0] map (
+
+	using (startIndex=(($$)*n),
+	
+	endIndex= min ([((($$)+1)*(n)-1), ((sizeOf(arr))-1)]) as Number) (
+	
+	arr[startIndex to endIndex]
+	
+	)
+))
+---
+{
+	test1 : group([1,2,3,4], 2),
+	test2 : group([1,2,3,4], 3),
+	test3 : group([1], 2),
+	test4 : group([], 2)
+	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
