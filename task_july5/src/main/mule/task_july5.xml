@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="task_july5Flow" doc:id="ed9aa8fa-86c1-426e-bc7a-d6db0d6c8807" >
+		<ee:transform doc:name="Transform Message" doc:id="36ab70e3-4364-4bff-8c43-c6d15456561e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+/*fun repeat(e,n)= if(n==null or e==null or n==0) 
+					[]
+				  else  
+				  	0 to n-1 map e */
+fun repeat(e,n)= n match{
+	case is Number -> if(n==0) 
+					[]
+				  else
+				  	0 to n-1 map e
+	else -> []
+}				  	
+---
+{
+	"test1": repeat(1,5),
+	"test2" : repeat({"one" : "two"}, 2),
+	"test3": repeat(1,0),
+	"test4": repeat(1,null),
+	"test5": repeat(null,null)
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="080b43dc-c1cf-41ff-aa5a-b26cb139b016" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"string to char array" : "Hello world" splitBy("") 
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
