@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="scatter_gather_exampleFlow" doc:id="1189a537-e97b-41cf-a94f-8d8a673a3151" >
+		<http:listener doc:name="Listener" doc:id="fc02f071-ffef-4e0b-ad93-b7934be3145a" config-ref="HTTP_Listener_config" path="scatter"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="46a49cca-4a51-483e-8f41-fe7a4175f8c1" >
+			<route >
+				<file:read doc:name="Read contacts-1.csv file" doc:id="9dba26c9-8f9b-421a-b891-2f277456cd73" path="C:\Users\Mounika Gudiputi\Documents\file-operations\read\contacts-1.csv" outputMimeType="text/csv" target="contacts1"/>
+			</route>
+			<route >
+				<file:read doc:name="Read contacts-2.csv file" doc:id="2632ceaa-042a-4f51-a141-23fee286a836" path="C:\Users\Mounika Gudiputi\Documents\file-operations\read\contacts-2.csv" outputMimeType="text/csv" target="contacts2"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Aggregate data to JSON" doc:id="e147a256-cdee-42eb-83df-ee44804dd769" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+aggregated: vars.contacts1 ++ vars.contacts2]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

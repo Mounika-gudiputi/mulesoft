@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="67206966-d06e-4352-9c08-30939454fe96" >
+		<http:listener-connection host="0.0.0.0" port="8037" />
+	</http:listener-config>
+	<flow name="tasks_july13Flow" doc:id="88130a16-e31a-4700-9a31-1197270285a4" >
+		<http:listener doc:name="Listener" doc:id="bdfa3105-9869-40d9-80c3-9742829a4267" config-ref="HTTP_Listener_config" path="trigger"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="6c2ebb76-dafb-494a-b941-8d438c445a24" millisBetweenRetries="1000">
+			<logger level="INFO" doc:name="Log processing triggered" doc:id="7be83ac1-ef90-4d97-a99a-80bbf02abba5" message="#['Attempt to trigger processing']"/>
+			<choice doc:name="Should the flow fail?" doc:id="b8ffc3fb-1ef7-4fe4-91a9-86e992c16f3f" >
+				<when expression="attributes.queryParams.fail">
+					<scripting:execute engine="ECMAScript" doc:name="Execute the failing script" doc:id="92f55314-4e39-49b6-92ee-1512a453e1f8" >
+						<scripting:code ><![CDATA[var simpleString = "This is the reason why the processing has failed";
+payload=simpleString;]]></scripting:code>
+					</scripting:execute>
+					<set-payload value="#[payload]" doc:name="Set Payload" doc:id="01722d89-fe6a-42ff-a872-e80d4c5d4002" />
+				</when>
+				<otherwise >
+					<set-payload value="Processing successfully completed" doc:name="Set Response" doc:id="fe0d34a0-0480-486f-a106-76806ef9f977" mimeType="text/plain"/>
+				</otherwise>
+			</choice>
+		</until-successful>
+	</flow>
+</mule>
